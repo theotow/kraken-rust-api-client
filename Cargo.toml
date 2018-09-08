@@ -1,7 +1,15 @@
 [package]
-name = "rust1"
+name = "kraken_rust_api_client"
 version = "0.1.0"
 authors = ["Manuel Villing <manuel.villing@gmail.com>"]
+
+categories = ["api-bindings"]
+description = "Client for the kraken.com API (public, private)"
+homepage = "https://github.com/theotow/kraken-rust-api-client"
+keywords = ["kraken", "api"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/theotow/kraken-rust-api-client"
 
 [dependencies]
 rand = "0.4.0"
