@@ -1,4 +1,4 @@
-# kraken-rust-api-client
+# kraken-rust-api-client [![Build Status](https://travis-ci.com/theotow/kraken-rust-api-client.svg?branch=master)](https://travis-ci.com/theotow/kraken-rust-api-client)
 Client for the kraken.com API (public, private)
 
 ## Installation
