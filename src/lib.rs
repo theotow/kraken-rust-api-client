@@ -17,10 +17,9 @@ pub mod kraken {
     use std::io;
     use std::fmt;
     use serde_json;
-    use std::error::{self, Error as StdError};
+    use std::error::{self};
     use std::string::String;
     use std::collections::HashMap;
-    use hyper::header::Headers;
     use base64;
     use sha2::Sha256;
     use sha2::Sha512;
@@ -28,6 +27,7 @@ pub mod kraken {
     use std::time::{SystemTime, UNIX_EPOCH};
     use sha2::Digest;
     use std::str;
+    use reqwest::header::HeaderMap;
     header! { (ApiKey, "API-Key") => [String] }
     header! { (ApiSign, "API-Sign") => [String] }
 
@@ -154,7 +154,7 @@ pub mod kraken {
             }
         }
 
-        fn cause(&self) -> Option<&error::Error> {
+        fn cause(&self) -> Option<&dyn error::Error> {
             match *self {
                 Error::Api(_, _) => None,
                 Error::Json(ref err) => Some(err),
@@ -166,7 +166,7 @@ pub mod kraken {
 
     impl fmt::Display for Error {
         fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-            fmt.write_str(self.description())
+            fmt.write_str(&self.to_string())
         }
     }
 
@@ -183,7 +183,7 @@ pub mod kraken {
         Kraken {
             secret,
             key,
-            client: reqwest::Client::new().unwrap(),
+            client: reqwest::Client::new(),
         }
     }
 
@@ -308,11 +308,11 @@ pub mod kraken {
 
         pub fn private_request(&self, path: String, map: HashMap<String, String>) -> Result<serde_json::Value, Error> {
             let url = get_api_url(&path, API_VERSION, ApiType::Private);
-            let mut headers = Headers::new();
+            let mut headers = HeaderMap::new();
             let secret = base_64(self.secret.clone());
             let res = create_sign(url.path().to_string().into_bytes().clone(), secret, &map.clone());
-            headers.set(ApiKey(self.key.to_owned()));
-            headers.set(ApiSign(res.hash));
+            headers.insert("API-Key", self.key.parse().unwrap());
+            headers.insert("API-Sign", res.hash.parse().unwrap());
             let build = self.client.post(url).headers(headers).form(&res.map);
             let res = process_request(build)?;
             Ok(res)
