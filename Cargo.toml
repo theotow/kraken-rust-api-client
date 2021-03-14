@@ -22,7 +22,3 @@ chrono = "0.4"
 hmac = "0.5"
 sha2 = "0.7"
 base64 = "0.9"
-
-[lib]
-name = "lib"
-crate-type = ["staticlib"]
