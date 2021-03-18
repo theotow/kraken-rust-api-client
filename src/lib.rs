@@ -99,7 +99,7 @@ pub mod kraken {
     }
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
-    pub struct ResultSpreadTimeAskBid(i64, String, String);
+    pub struct ResultSpreadTimeAskBid(pub i64, pub String, pub String);
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
     pub struct ResultSpread {
@@ -108,7 +108,7 @@ pub mod kraken {
     }
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
-    pub struct ResultTradesEntry(String, String, f64, String, String, String);
+    pub struct ResultTradesEntry(pub String, pub String, pub f64, pub String, pub String, pub String);
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
     pub struct ResultTrades {
