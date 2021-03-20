@@ -124,7 +124,7 @@ pub mod kraken {
     }
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
-    pub struct ResultDepthEntry(String, String, i64);
+    pub struct ResultDepthEntry(pub String, pub String, pub i64);
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
     pub struct ResultDepth {
