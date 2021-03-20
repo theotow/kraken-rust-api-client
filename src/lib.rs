@@ -34,6 +34,8 @@ pub mod kraken {
     pub static API_BASE: &str = "https://api.kraken.com";
     pub static API_VERSION: u8 = 0;
 
+    pub static API_INTERNAL_BASE: &str = "https://www.kraken.com/api/internal";
+
     pub enum ApiType {
         Public,
         Private,
@@ -139,6 +141,42 @@ pub mod kraken {
 
     pub type ResultBalance = HashMap<String, String>;
 
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    pub struct MarketPerformance {
+        #[serde(rename(deserialize = "1m"))]
+        pub one_m: Option<String>,
+        #[serde(rename(deserialize = "1w"))]
+        pub one_w: Option<String>,
+        #[serde(rename(deserialize = "1w"))]
+        pub one_y: Option<String>,
+        #[serde(rename(deserialize = "24h"))]
+        pub twenty_four_h: Option<String>,
+        #[serde(rename(deserialize = "6m"))]
+        pub six_m: Option<String>,
+        pub ytd: Option<String>,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    pub struct MarketLiquidity {
+        pub ask: String,
+        pub bid: String,
+        pub ratio: String,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    pub struct MarketResult {
+        pub rank: u16,
+        pub name: String,
+        pub asset: String,
+        pub supported_kraken_asset: bool,
+        pub id: u16,
+        pub price: String,
+        pub volume: String,
+        pub market_cap: String,
+        pub performance: MarketPerformance,
+        pub liquidity: MarketLiquidity,
+    }
+
     impl From<serde_json::error::Error> for Error {
         fn from(err: serde_json::error::Error) -> Self {
             Error::Json(err)
@@ -197,6 +235,18 @@ pub mod kraken {
     impl Kraken {
         pub fn get_config(&self) -> String {
             format!("{}, {}", self.secret, self.key)
+        }
+
+        pub fn markets(&self, asset: String) -> Result<Vec<MarketResult>, Error> {
+            let mut url = get_internal_api_url(&String::from("cryptowatch/markets/assets"));
+            url.query_pairs_mut()
+                .append_pair("asset", &asset)
+                .append_pair("limit", &"60");
+            let build = self.client.get(url);
+            let res = process_request(build)?;
+
+            let result_data: Vec<MarketResult> = serde_json::from_value(res)?;
+            Ok(result_data)
         }
 
         pub fn time(&self) -> Result<ResultTime, Error> {
@@ -371,6 +421,14 @@ pub mod kraken {
         reqwest::Url::parse(&get_api_url_string(api, version, atype)).unwrap()
     }
 
+    pub fn get_internal_api_url_string(api: &str) -> String {
+        format!("{}/{}", API_INTERNAL_BASE, api)
+    }
+
+    pub fn get_internal_api_url(api: &str) -> reqwest::Url {
+        reqwest::Url::parse(&get_internal_api_url_string(api)).unwrap()
+    }
+
     pub fn base_64(input: String) -> Vec<u8> {
         base64::decode(&input).unwrap()
     }
@@ -483,6 +541,12 @@ mod tests {
                 > target,
             true
         );
+    }
+
+    #[test]
+    fn can_request_markets() {
+        let res = get_test_instance().markets("EUR".to_string()).unwrap();
+        assert_eq!(res.iter().count(), 60);
     }
 
     #[test]
